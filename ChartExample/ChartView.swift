@@ -31,6 +31,7 @@ class ChartView: UIView {
                                     UIColor.orange.cgColor,
                                     UIColor.red.cgColor,
                                     UIColor.black.cgColor]
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -38,34 +39,85 @@ class ChartView: UIView {
         viewHeight = frame.height
         
         VisibleColorLayer.colors = rainBowColors
-        VisibleColorLayer.startPoint = CGPoint(x: 0, y: 0)
-        VisibleColorLayer.endPoint = CGPoint(x: 1, y: 0)
-        VisibleColorLayer.frame = CGRect(x: 0, y: 0, width: viewWidth, height: viewHeight)
-        
+        VisibleColorLayer.startPoint = CGPoint(x: 0, y: 0) //
+        VisibleColorLayer.endPoint = CGPoint(x: 1, y: 0) //
     }
     
     func ChartPlot(dataArray: Array<CGFloat>, specStart: Int, specEnd: Int) {
-        VisibleColorLayer.locations = [ 0, 0.2, 0.3, 0.4 , 0.5, 0.7, 0.8] // need to be edit
+        // draw bound of chart
+        drawChartBound(specStart: specStart, specEnd: specEnd, labelLine: 10)
+        
+        
+        VisibleColorLayer.frame = CGRect(x: 0, y: 0, width: viewWidth, height: viewHeight)
+        let location = GradientLayerLocation(specStart: specStart, specEnd: specEnd)
+        VisibleColorLayer.locations = location
         self.layer.addSublayer(VisibleColorLayer)
+        
         
         // draw chart line
         let pointNum: Int = dataArray.count
         let pointWidth: CGFloat = viewWidth / CGFloat(pointNum + 1)
         ChartLine.move(to: CGPoint(x: 0, y: viewHeight))
+        // need to add a new path for mask for VisibleColorLayer
         for i in 0...pointNum-1 {
             ChartLine.addLine(to: CGPoint(x: pointWidth * CGFloat(i+1), y: viewHeight - dataArray[i]))
         }
         ChartLine.addLine(to: CGPoint(x: viewWidth, y: viewHeight))
-        ChartLineLayer.path = ChartLine.cgPath
-        ChartLineLayer.fillColor = UIColor.clear.cgColor
-        ChartLineLayer.strokeColor = UIColor.black.cgColor
-        ChartLineLayer.lineWidth = 0.1
-        self.layer.addSublayer(ChartLineLayer)
         
         // mask for VisibleColorLayer
         ChartLine.close()
         maskLayer.path = ChartLine.cgPath
         VisibleColorLayer.mask = maskLayer
+        
+        ChartLineLayer.path = ChartLine.cgPath
+        ChartLineLayer.fillColor = UIColor.clear.cgColor
+        ChartLineLayer.strokeColor = UIColor.black.cgColor
+        ChartLineLayer.lineWidth = 0.3
+        self.layer.addSublayer(ChartLineLayer)
+    }
+    
+    private func drawChartBound(specStart: Int, specEnd: Int, labelLine: CGFloat){
+        let ChartBound = UIBezierPath()
+        ChartBound.move(to: CGPoint(x: 0, y: viewHeight))
+        ChartBound.addLine(to: CGPoint(x: viewWidth, y: viewHeight))
+        ChartBound.addLine(to: CGPoint(x: viewWidth, y: 0))
+        ChartBound.addLine(to: CGPoint(x: 0, y: 0))
+        ChartBound.addLine(to: CGPoint(x: 0, y: viewHeight + labelLine))
+
+        var labelX: CGFloat
+        for i in (specStart / 50)+1 ... (specEnd / 50){
+            labelX = CGFloat(50 * i - specStart) / CGFloat(specEnd - specStart) * viewWidth
+            ChartBound.move(to: CGPoint(x: labelX, y: viewHeight))
+            ChartBound.addLine(to: CGPoint(x: labelX, y: viewHeight + labelLine))
+        }
+        ChartBound.move(to: CGPoint(x: viewWidth, y: viewHeight))
+        ChartBound.addLine(to: CGPoint(x: viewWidth, y: viewHeight + labelLine))
+        
+        
+        ChartBound.lineWidth = 1
+        
+        let boundLayer = CAShapeLayer()
+        boundLayer.path = ChartBound.cgPath
+        boundLayer.fillColor = UIColor.clear.cgColor
+        boundLayer.strokeColor = UIColor.black.cgColor
+        self.layer.addSublayer(boundLayer)
+    }
+    
+    func enableVisibleColorLayer(enable: Bool){
+        if enable{
+            self.layer.addSublayer(VisibleColorLayer)
+        }else{
+            VisibleColorLayer.removeFromSuperlayer()
+        }
+    }
+    
+    func GradientLayerLocation(specStart: Int, specEnd: Int) -> Array<NSNumber>{
+        var LocationArray: Array<Float> = [ 0, 0, 0, 0, 0, 0, 0]
+        let GradSpec: Array<Int> = [380, 450, 495, 570, 590, 620, 750]
+        for i in 0...GradSpec.count-1 {
+            LocationArray[i] = Float(GradSpec[i] - specStart) / Float(specEnd - specStart)
+        }
+        return LocationArray as [NSNumber]
     }
     
     required init?(coder aDecoder: NSCoder) {

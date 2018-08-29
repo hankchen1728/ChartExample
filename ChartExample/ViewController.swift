@@ -9,10 +9,11 @@
 import UIKit
 
 class ViewController: UIViewController {
-    
-
     var screenHeight:CGFloat = 0, screenWidth:CGFloat = 0
     var chartView: ChartView!
+    var chartView_v2: ChartView!
+    
+    var colorSwitch: UISwitch!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,14 +23,34 @@ class ViewController: UIViewController {
         // screenHeight = 667.0 , screenWidth = 375.0
         screenHeight = self.view.frame.height
         screenWidth = self.view.frame.width
-        let chartViewFrame = CGRect(x: screenWidth * 0.05, y: screenHeight * 0.35, width: screenWidth * 0.9, height: screenHeight * 0.3)
+        
+        colorSwitch = UISwitch()
+        colorSwitch.center = CGPoint(x: screenWidth * 0.8, y: screenHeight * 0.2)
+        colorSwitch.isOn = true
+        colorSwitch.addTarget(self, action: #selector(ViewController.showVisibleSpec), for: .valueChanged)
+        self.view.addSubview(colorSwitch)
+        
+        let chartViewFrame = CGRect(x: screenWidth * 0.05, y: screenHeight * 0.4, width: screenWidth * 0.9, height: screenHeight * 0.3)
         
         chartView = ChartView(frame: chartViewFrame)
-        
-        let dataArray = randomArray(Length: 1920)
-        chartView.ChartPlot(dataArray: dataArray, specStart: 0, specEnd: 0)
+        let dataArray = randomArray(Length: 500)
+        chartView.ChartPlot(dataArray: dataArray, specStart: 300, specEnd: 800)
         self.view.addSubview(chartView)
         
+    }
+    
+    @objc func showVisibleSpec(sender: AnyObject){
+        let ColorSwitch = sender as! UISwitch
+        
+        if ColorSwitch.isOn{
+            chartView.removeFromSuperview()
+            chartView.enableVisibleColorLayer(enable: true)
+            self.view.addSubview(chartView)
+        }else{
+            chartView.removeFromSuperview()
+            chartView.enableVisibleColorLayer(enable: false)
+            self.view.addSubview(chartView)
+        }
     }
     
     func randomArray(Length: Int) -> Array<CGFloat>{
