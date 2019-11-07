@@ -11,7 +11,6 @@ import UIKit
 class ViewController: UIViewController {
     var screenHeight:CGFloat = 0, screenWidth:CGFloat = 0
     var chartView: ChartView!
-    var chartView_v2: ChartView!
     
     var colorSwitch: UISwitch!
     
@@ -33,7 +32,7 @@ class ViewController: UIViewController {
         let chartViewFrame = CGRect(x: screenWidth * 0.05, y: screenHeight * 0.4, width: screenWidth * 0.9, height: screenHeight * 0.3)
         
         chartView = ChartView(frame: chartViewFrame)
-        let dataArray = randomArray(Length: 500)
+        let dataArray = randomArray(Length: 1920)
         chartView.ChartPlot(dataArray: dataArray, specStart: 300, specEnd: 800)
         self.view.addSubview(chartView)
         
@@ -53,7 +52,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func randomArray(Length: Int) -> Array<CGFloat>{
+    func randomArray(Length: Int) -> [CGFloat] {
         let randomRange = UInt32(screenHeight * 0.2)
         var newArray = [CGFloat](repeating: 0, count: Length)
         
